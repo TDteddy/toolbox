@@ -1,5 +1,5 @@
 # main.py
-
+import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -166,6 +166,5 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
 
 
 if __name__ == "__main__":
-    import uvicorn
 
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
