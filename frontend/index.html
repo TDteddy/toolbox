@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Profile Generator For GPTS</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Company Profile Generator For GPTS</h1>
+        <div class="tab">
+            <button class="tablinks" onclick="openTab(event, 'CompanyIntro')">회사소개 자동생성</button>
+            <button class="tablinks" onclick="openTab(event, 'OtherTab2')">Other Tab 2</button>
+            <button class="tablinks" onclick="openTab(event, 'OtherTab3')">Other Tab 3</button>
+            <button class="tablinks" onclick="logout()">Logout</button>
+        </div>
+
+        <div id="CompanyIntro" class="tabcontent">
+            <h2>회사소개 자동생성</h2>
+            <form id="uploadForm">
+                <label for="roleAndGoals">역할과 목표:</label>
+                <textarea id="roleAndGoals" name="roleAndGoals" rows="4" cols="50"></textarea><br><br>
+                <label for="fileInput">파일 업로드:</label>
+                <input type="file" id="fileInput" name="files" accept=".pdf" multiple><br><br>
+                <button type="submit">내용 생성하기</button>
+            </form>
+            <div id="result">
+                <h2>생성결과</h2>
+                <form id="saveForm">
+                    <h3>회사소개</h3>
+                    <textarea id="companyIntroText" name="company_intro" rows="10" cols="50"></textarea><br>
+                    <h3>브랜드소개</h3>
+                    <textarea id="brandIntroText" name="brand_intro" rows="10" cols="50"></textarea><br>
+                    <h3>제품소개</h3>
+                    <textarea id="productIntroText" name="product_intro" rows="10" cols="50"></textarea><br>
+                    <button type="submit">수정된 내용 저장하기</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="OtherTab2" class="tabcontent">
+            <h2>Other Tab 2</h2>
+            <p>Other content 2...</p>
+        </div>
+
+        <div id="OtherTab3" class="tabcontent">
+            <h2>Other Tab 3</h2>
+            <p>Other content 3...</p>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
