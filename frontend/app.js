@@ -75,7 +75,9 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     formData.append('company_intro', companyIntro);
     formData.append('brand_intro', brandIntro);
     formData.append('product_intro', productIntro);
-    formData.append('additional_files', JSON.stringify(additionalFiles));
+    additionalFiles.forEach((file, index) => {
+        formData.append(`additional_files_${index}`, file);
+    });
 
     const response = await fetch('http://127.0.0.1:8000/saveeditedtext/', {
         method: 'POST',
