@@ -35,6 +35,8 @@
                     <textarea id="brandIntroText" name="brand_intro" rows="10" cols="50"></textarea><br>
                     <h3>Product Introduction</h3>
                     <textarea id="productIntroText" name="product_intro" rows="10" cols="50"></textarea><br>
+                    <div id="additionalFileInputs"></div>
+                    <button type="button" onclick="addFileInput()">Add another file</button><br><br>
                     <button type="submit">Save Edited Texts</button>
                 </form>
             </div>
@@ -43,14 +45,12 @@
         <div id="AdditionalFiles" class="tabcontent">
             <h2>추가 정보 업로드</h2>
             <form id="additionalForm">
-                <div id="additionalFileInputs">
-                    <div class="additionalFileInput">
-                        <label for="filePurpose1">파일 용도:</label>
-                        <input type="text" id="filePurpose1" name="file_purpose" required><br>
-                        <label for="fileName1">파일 이름:</label>
-                        <input type="text" id="fileName1" name="file_name" required><br>
-                        <input type="file" name="files" accept=".txt" required><br>
-                    </div>
+                <div class="additionalFileInput">
+                    <label for="filePurpose">파일 용도:</label>
+                    <input type="text" id="filePurpose" name="file_purpose" required><br>
+                    <label for="fileName">파일 이름:</label>
+                    <input type="text" id="fileName" name="file_name" required><br>
+                    <textarea id="fileContent" name="file_content" rows="10" cols="50" required></textarea><br>
                 </div>
                 <button type="button" onclick="addFileInput()">Add another file</button><br><br>
                 <button type="submit">Upload Additional Files</button>

@@ -61,10 +61,21 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     const companyIntro = document.getElementById('companyIntroText').value;
     const brandIntro = document.getElementById('brandIntroText').value;
     const productIntro = document.getElementById('productIntroText').value;
+    const additionalFileInputs = document.getElementsByClassName('additionalFileInput');
+    const additionalFiles = [];
+
+    for (let i = 0; i < additionalFileInputs.length; i++) {
+        const filePurpose = additionalFileInputs[i].querySelector('[name="file_purpose"]').value;
+        const fileName = additionalFileInputs[i].querySelector('[name="file_name"]').value;
+        const fileContent = additionalFileInputs[i].querySelector('[name="file_content"]').value;
+        additionalFiles.push(`${filePurpose}|${fileName}|${fileContent}`);
+    }
+
     const formData = new FormData();
     formData.append('company_intro', companyIntro);
     formData.append('brand_intro', brandIntro);
     formData.append('product_intro', productIntro);
+    formData.append('additional_files', JSON.stringify(additionalFiles));
 
     const response = await fetch('http://127.0.0.1:8000/saveeditedtext/', {
         method: 'POST',
@@ -88,18 +99,15 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         return;
     }
 
+    const filePurpose = document.getElementById('filePurpose').value;
+    const fileName = document.getElementById('fileName').value;
+    const fileContent = document.getElementById('fileContent').value;
     const formData = new FormData();
-    const filePurposeElements = document.getElementsByName('file_purpose');
-    const fileNameElements = document.getElementsByName('file_name');
-    const fileInputElements = document.getElementsByName('files');
+    formData.append('file_purpose', filePurpose);
+    formData.append('file_name', fileName);
+    formData.append('file_content', fileContent);
 
-    for (let i = 0; i < filePurposeElements.length; i++) {
-        formData.append('file_purpose', filePurposeElements[i].value);
-        formData.append('file_name', fileNameElements[i].value);
-        formData.append('files', fileInputElements[i].files[0]);
-    }
-
-    const response = await fetch('http://127.0.0.1:8000/saveadditionalfiles/', {
+    const response = await fetch('http://127.0.0.1:8000/saveadditionaltext/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -121,9 +129,15 @@ function addFileInput() {
         <input type="text" id="filePurpose${newIndex}" name="file_purpose" required><br>
         <label for="fileName${newIndex}">파일 이름:</label>
         <input type="text" id="fileName${newIndex}" name="file_name" required><br>
-        <input type="file" name="files" accept=".txt" required><br>
+        <textarea id="fileContent${newIndex}" name="file_content" rows="10" cols="50" required></textarea><br>
+        <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
     `;
     fileInputsDiv.appendChild(newFileInput);
+}
+
+function removeFileInput(button) {
+    const fileInputDiv = button.parentNode;
+    fileInputDiv.remove();
 }
 
 async function loadTexts() {
@@ -146,6 +160,21 @@ async function loadTexts() {
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
         document.getElementById('productIntroText').value = result.product_intro;
+
+        const fileInputsDiv = document.getElementById('additionalFileInputs');
+        result.additional_files.forEach((file, index) => {
+            const newFileInput = document.createElement('div');
+            newFileInput.classList.add('additionalFileInput');
+            newFileInput.innerHTML = `
+                <label for="filePurpose${index + 1}">파일 용도:</label>
+                <input type="text" id="filePurpose${index + 1}" name="file_purpose" value="${file.purpose}" required><br>
+                <label for="fileName${index + 1}">파일 이름:</label>
+                <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
+                <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
+                <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
+            `;
+            fileInputsDiv.appendChild(newFileInput);
+        });
     } else {
         alert('Failed to load texts.');
     }

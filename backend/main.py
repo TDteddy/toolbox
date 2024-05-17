@@ -113,23 +113,21 @@ async def create_upload_files(
     }
 
 
-@app.post("/saveadditionalfiles/")
-async def save_additional_files(
-        file_purpose: List[str] = Form(...),
-        file_name: List[str] = Form(...),
-        files: List[UploadFile] = File(...),
+@app.post("/saveadditionaltext/")
+async def save_additional_text(
+        file_purpose: str = Form(...),
+        file_name: str = Form(...),
+        file_content: str = Form(...),
         current_user: dict = Depends(get_current_active_user)
 ):
     user_dir = os.path.join("generated_texts", current_user["username"])
     os.makedirs(user_dir, exist_ok=True)
 
-    for purpose, name, file in zip(file_purpose, file_name, files):
-        file_path = os.path.join(user_dir, f"{purpose}_{name}.txt")
-        with open(file_path, "wb") as f:
-            contents = file.file.read()
-            f.write(contents)
+    file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
+    with open(file_path, "w") as f:
+        f.write(file_content)
 
-    return {"message": "Additional files saved successfully"}
+    return {"message": "Additional text saved successfully"}
 
 
 @app.post("/saveeditedtext/")
@@ -137,6 +135,7 @@ async def save_edited_text(
         company_intro: str = Form(...),
         brand_intro: str = Form(...),
         product_intro: str = Form(...),
+        additional_files: List[str] = Form([]),
         current_user: dict = Depends(get_current_active_user)
 ):
     # 사용자별 저장할 디렉토리
@@ -153,6 +152,13 @@ async def save_edited_text(
     with open(os.path.join(user_dir, "product_intro.txt"), "w") as f:
         f.write(product_intro)
 
+    # 추가 파일 저장
+    for file_info in additional_files:
+        file_purpose, file_name, file_content = file_info.split('|')
+        file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
+        with open(file_path, "w") as f:
+            f.write(file_content)
+
     return {"message": "Texts saved successfully"}
 
 
@@ -162,6 +168,7 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     company_intro = ""
     brand_intro = ""
     product_intro = ""
+    additional_files = []
 
     if os.path.exists(os.path.join(user_dir, "company_intro.txt")):
         with open(os.path.join(user_dir, "company_intro.txt"), "r") as f:
@@ -175,10 +182,23 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
         with open(os.path.join(user_dir, "product_intro.txt"), "r") as f:
             product_intro = f.read()
 
+    for file_name in os.listdir(user_dir):
+        if file_name not in ["company_intro.txt", "brand_intro.txt", "product_intro.txt"]:
+            with open(os.path.join(user_dir, file_name), "r") as f:
+                content = f.read()
+                purpose, name = file_name.rsplit('_', 1)
+                name = name.replace('.txt', '')
+                additional_files.append({
+                    "purpose": purpose,
+                    "name": name,
+                    "content": content
+                })
+
     return {
         "company_intro": company_intro,
         "brand_intro": brand_intro,
-        "product_intro": product_intro
+        "product_intro": product_intro,
+        "additional_files": additional_files
     }
 
 
