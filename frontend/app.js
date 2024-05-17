@@ -122,7 +122,7 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
 });
 
 function addFileInput() {
-    const fileInputsDiv = document.getElementById('additionalFileInputs');
+    const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
     const newIndex = fileInputsDiv.children.length + 1;
     const newFileInput = document.createElement('div');
     newFileInput.classList.add('additionalFileInput');
@@ -163,7 +163,7 @@ async function loadTexts() {
         document.getElementById('brandIntroText').value = result.brand_intro;
         document.getElementById('productIntroText').value = result.product_intro;
 
-        const fileInputsDiv = document.getElementById('additionalFileInputs');
+        const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
         result.additional_files.forEach((file, index) => {
             const newFileInput = document.createElement('div');
             newFileInput.classList.add('additionalFileInput');
