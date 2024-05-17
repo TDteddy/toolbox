@@ -78,6 +78,54 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     alert(result.message);
 });
 
+document.getElementById('additionalForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+        alert('Please log in first.');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    const formData = new FormData();
+    const filePurposeElements = document.getElementsByName('file_purpose');
+    const fileNameElements = document.getElementsByName('file_name');
+    const fileInputElements = document.getElementsByName('files');
+
+    for (let i = 0; i < filePurposeElements.length; i++) {
+        formData.append('file_purpose', filePurposeElements[i].value);
+        formData.append('file_name', fileNameElements[i].value);
+        formData.append('files', fileInputElements[i].files[0]);
+    }
+
+    const response = await fetch('http://127.0.0.1:8000/saveadditionalfiles/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
+
+    const result = await response.json();
+    alert(result.message);
+});
+
+function addFileInput() {
+    const fileInputsDiv = document.getElementById('additionalFileInputs');
+    const newIndex = fileInputsDiv.children.length + 1;
+    const newFileInput = document.createElement('div');
+    newFileInput.classList.add('additionalFileInput');
+    newFileInput.innerHTML = `
+        <label for="filePurpose${newIndex}">파일 용도:</label>
+        <input type="text" id="filePurpose${newIndex}" name="file_purpose" required><br>
+        <label for="fileName${newIndex}">파일 이름:</label>
+        <input type="text" id="fileName${newIndex}" name="file_name" required><br>
+        <input type="file" name="files" accept=".txt" required><br>
+    `;
+    fileInputsDiv.appendChild(newFileInput);
+}
+
 async function loadTexts() {
     const token = localStorage.getItem('token');
     if (!token) {

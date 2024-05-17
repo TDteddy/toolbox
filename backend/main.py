@@ -1,5 +1,3 @@
-# main.py
-import uvicorn
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -115,6 +113,25 @@ async def create_upload_files(
     }
 
 
+@app.post("/saveadditionalfiles/")
+async def save_additional_files(
+        file_purpose: List[str] = Form(...),
+        file_name: List[str] = Form(...),
+        files: List[UploadFile] = File(...),
+        current_user: dict = Depends(get_current_active_user)
+):
+    user_dir = os.path.join("generated_texts", current_user["username"])
+    os.makedirs(user_dir, exist_ok=True)
+
+    for purpose, name, file in zip(file_purpose, file_name, files):
+        file_path = os.path.join(user_dir, f"{purpose}_{name}.txt")
+        with open(file_path, "wb") as f:
+            contents = file.file.read()
+            f.write(contents)
+
+    return {"message": "Additional files saved successfully"}
+
+
 @app.post("/saveeditedtext/")
 async def save_edited_text(
         company_intro: str = Form(...),
@@ -166,5 +183,6 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
 
 
 if __name__ == "__main__":
+    import uvicorn
 
     uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
