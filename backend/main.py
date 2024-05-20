@@ -170,6 +170,10 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     product_intro = ""
     additional_files = []
 
+    # 디렉토리가 존재하지 않으면 생성
+    if not os.path.exists(user_dir):
+        os.makedirs(user_dir)
+
     if os.path.exists(os.path.join(user_dir, "company_intro.txt")):
         with open(os.path.join(user_dir, "company_intro.txt"), "r") as f:
             company_intro = f.read()
