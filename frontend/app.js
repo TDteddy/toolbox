@@ -34,7 +34,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         formData.append('files', files[i]);
     }
 
-    const response = await fetch('http://127.0.0.1:8000/uploadfiles/', {
+    const response = await fetch('https://api.udm.ai/uploadfiles/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -42,10 +42,14 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         }
     });
 
-    const result = await response.json();
-    document.getElementById('companyIntroText').value = result.company_intro;
-    document.getElementById('brandIntroText').value = result.brand_intro;
-    document.getElementById('productIntroText').value = result.product_intro;
+    if (response.ok) {
+        const result = await response.json();
+        document.getElementById('companyIntroText').value = result.company_intro;
+        document.getElementById('brandIntroText').value = result.brand_intro;
+        document.getElementById('productIntroText').value = result.product_intro;
+    } else {
+        alert('Failed to generate profiles.');
+    }
 });
 
 document.getElementById('saveForm').addEventListener('submit', async (event) => {
@@ -79,7 +83,7 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
         formData.append(`additional_files_${index}`, file);
     });
 
-    const response = await fetch('http://127.0.0.1:8000/saveeditedtext/', {
+    const response = await fetch('https://api.udm.ai/saveeditedtext/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -87,8 +91,12 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
         }
     });
 
-    const result = await response.json();
-    alert(result.message);
+    if (response.ok) {
+        const result = await response.json();
+        alert(result.message);
+    } else {
+        alert('Failed to save texts.');
+    }
 });
 
 document.getElementById('additionalForm').addEventListener('submit', async (event) => {
@@ -109,7 +117,7 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
     formData.append('file_name', fileName);
     formData.append('file_content', fileContent);
 
-    const response = await fetch('http://127.0.0.1:8000/saveadditionaltext/', {
+    const response = await fetch('https://api.udm.ai/saveadditionaltext/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -117,30 +125,13 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         }
     });
 
-    const result = await response.json();
-    alert(result.message);
+    if (response.ok) {
+        const result = await response.json();
+        alert(result.message);
+    } else {
+        alert('Failed to upload additional file.');
+    }
 });
-
-function addFileInput() {
-    const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
-    const newIndex = fileInputsDiv.children.length + 1;
-    const newFileInput = document.createElement('div');
-    newFileInput.classList.add('additionalFileInput');
-    newFileInput.innerHTML = `
-        <label for="filePurpose${newIndex}">파일 용도:</label>
-        <input type="text" id="filePurpose${newIndex}" name="file_purpose" required><br>
-        <label for="fileName${newIndex}">파일 이름:</label>
-        <input type="text" id="fileName${newIndex}" name="file_name" required><br>
-        <textarea id="fileContent${newIndex}" name="file_content" rows="10" cols="50" required></textarea><br>
-        <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
-    `;
-    fileInputsDiv.appendChild(newFileInput);
-}
-
-function removeFileInput(button) {
-    const fileInputDiv = button.parentNode;
-    fileInputDiv.remove();
-}
 
 async function loadTexts() {
     const token = localStorage.getItem('token');
@@ -150,7 +141,7 @@ async function loadTexts() {
         return;
     }
 
-    const response = await fetch('http://127.0.0.1:8000/gettexts/', {
+    const response = await fetch('https://api.udm.ai/gettexts/', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`
@@ -183,6 +174,27 @@ async function loadTexts() {
 }
 
 document.addEventListener('DOMContentLoaded', loadTexts);
+
+function addFileInput() {
+    const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
+    const newIndex = fileInputsDiv.children.length + 1;
+    const newFileInput = document.createElement('div');
+    newFileInput.classList.add('additionalFileInput');
+    newFileInput.innerHTML = `
+        <label for="filePurpose${newIndex}">파일 용도:</label>
+        <input type="text" id="filePurpose${newIndex}" name="file_purpose" required><br>
+        <label for="fileName${newIndex}">파일 이름:</label>
+        <input type="text" id="fileName${newIndex}" name="file_name" required><br>
+        <textarea id="fileContent${newIndex}" name="file_content" rows="10" cols="50" required></textarea><br>
+        <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
+    `;
+    fileInputsDiv.appendChild(newFileInput);
+}
+
+function removeFileInput(button) {
+    const fileInputDiv = button.parentNode;
+    fileInputDiv.remove();
+}
 
 function logout() {
     localStorage.removeItem('token');

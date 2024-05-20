@@ -10,10 +10,14 @@
     <div class="container">
         <h1>Login</h1>
         <form id="loginForm">
+            <input type="hidden" id="client_id" name="client_id">
+            <input type="hidden" id="redirect_uri" name="redirect_uri">
+            <input type="hidden" id="response_type" name="response_type">
+            <input type="hidden" id="state" name="state">
             <label for="username">Username:</label>
-            <input type="text" id="username" name="username"><br><br>
+            <input type="text" id="username" name="username" required><br><br>
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password"><br><br>
+            <input type="password" id="password" name="password" required><br><br>
             <button type="submit">Login</button>
         </form>
     </div>

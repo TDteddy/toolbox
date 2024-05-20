@@ -1,33 +1,34 @@
+import asyncio
+
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.staticfiles import StaticFiles
 from datetime import timedelta
 from typing import List
 import openai
 import fitz  # PyMuPDF
 import io
 import os
-from auth import authenticate_user, create_access_token, get_current_active_user, fake_users_db  # 추가됨
+from auth import authenticate_user, get_current_active_user, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
+from oauth2 import router as oauth2_router, create_access_token
 
 app = FastAPI()
-
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # 모든 출처 허용
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# JWT 설정
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+# Static files 설정
+app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
 # OpenAI API 키 설정
 openai.api_key = 'YOUR_OPENAI_API_KEY'
-
 
 def extract_info_from_pdfs(files: List[UploadFile]):
     text = ""
@@ -37,9 +38,7 @@ def extract_info_from_pdfs(files: List[UploadFile]):
         for page_num in range(len(pdf_document)):
             page = pdf_document.load_page(page_num)
             text += page.get_text()
-
     return text
-
 
 def generate_text_from_gpt(prompt: str):
     response = openai.Completion.create(
@@ -49,7 +48,6 @@ def generate_text_from_gpt(prompt: str):
         temperature=0.7
     )
     return response.choices[0].text.strip()
-
 
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -66,8 +64,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
-
-@app.post("/uploadfiles/")
+@app.post("/uploadfiles")
 async def create_upload_files(
         role_and_goals: str = Form(...),
         files: List[UploadFile] = File(...),
@@ -112,8 +109,7 @@ async def create_upload_files(
         "product_intro": product_intro
     }
 
-
-@app.post("/saveadditionaltext/")
+@app.post("/saveadditionaltext")
 async def save_additional_text(
         file_purpose: str = Form(...),
         file_name: str = Form(...),
@@ -129,8 +125,7 @@ async def save_additional_text(
 
     return {"message": "Additional text saved successfully"}
 
-
-@app.post("/saveeditedtext/")
+@app.post("/saveeditedtext")
 async def save_edited_text(
         company_intro: str = Form(...),
         brand_intro: str = Form(...),
@@ -161,8 +156,7 @@ async def save_edited_text(
 
     return {"message": "Texts saved successfully"}
 
-
-@app.get("/gettexts/")
+@app.get("/gettexts")
 async def get_texts(current_user: dict = Depends(get_current_active_user)):
     user_dir = os.path.join("generated_texts", current_user["username"])
     company_intro = ""
@@ -205,8 +199,16 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
         "additional_files": additional_files
     }
 
+app.include_router(oauth2_router, prefix="/oauth2", tags=["oauth2"])
 
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000,
+        log_level="debug",
+        ssl_certfile="../certificates/certificate.crt",
+        ssl_keyfile="../certificates/private.key"
+    )
