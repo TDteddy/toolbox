@@ -1,25 +1,44 @@
-document.getElementById('loginForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
+document.addEventListener('DOMContentLoaded', async () => {
+    const token = localStorage.getItem('token');
+    if (token) {
+        const response = await fetch('https://api.udm.kr/me', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
 
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
+        if (response.ok) {
+            window.location.href = 'index.html';
+            return;
+        }
+    }
 
-    const response = await fetch('http://127.0.0.1:8000/token', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: new URLSearchParams({
-            'username': username,
-            'password': password
-        })
+    document.getElementById('oauthLoginButton').addEventListener('click', () => {
+        window.location.href = 'https://api.udm.kr/login';
     });
 
-    if (response.ok) {
+    document.getElementById('loginForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const formData = new URLSearchParams();
+        formData.append('username', username);
+        formData.append('password', password);
+
+        const response = await fetch('https://api.udm.kr/token', {
+            method: 'POST',
+            body: formData
+        });
+
         const result = await response.json();
-        localStorage.setItem('token', result.access_token);
-        window.location.href = 'index.html';
-    } else {
-        alert('Login failed. Please check your username and password.');
-    }
+
+        if (response.ok) {
+            localStorage.setItem('token', result.access_token);
+            window.location.href = 'index.html';
+        } else {
+            alert(result.detail);
+        }
+    });
 });

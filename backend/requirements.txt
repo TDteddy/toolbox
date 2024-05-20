@@ -1,5 +1,10 @@
 fastapi
 uvicorn
+oauthlib
+authlib
+python-dotenv
+httpx
+pyjwt
 openai
 pymupdf
 python-jose[cryptography]

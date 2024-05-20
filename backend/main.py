@@ -1,32 +1,53 @@
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
+import os
+from fastapi import FastAPI, Depends, HTTPException, Request, Form, File, UploadFile
+from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2AuthorizationCodeBearer
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordRequestForm
-from datetime import timedelta
+from authlib.integrations.starlette_client import OAuth
+from dotenv import load_dotenv
+import httpx
 from typing import List
+from auth import authenticate_user, create_access_token, get_current_active_user, fake_users_db
 import openai
 import fitz  # PyMuPDF
-import io
-import os
-from auth import authenticate_user, create_access_token, get_current_active_user, fake_users_db  # 추가됨
+from datetime import timedelta
+
+load_dotenv()
 
 app = FastAPI()
 
 # CORS 설정
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://api.udm.kr", "*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# JWT 설정
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
 # OpenAI API 키 설정
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+openai.api_key = os.getenv('YOUR_OPENAI_API_KEY')
+
+# OAuth 설정
+oauth = OAuth()
+oauth.register(
+    name='server',
+    client_id=os.getenv('OAUTH_CLIENT_ID'),
+    client_secret=os.getenv('OAUTH_CLIENT_SECRET'),
+    authorize_url=os.getenv('OAUTH_AUTHORIZATION_URL'),
+    authorize_params=None,
+    access_token_url=os.getenv('OAUTH_TOKEN_URL'),
+    access_token_params=None,
+    redirect_uri=os.getenv('OAUTH_REDIRECT_URI'),
+    client_kwargs={'scope': 'openid email profile'},
+)
+
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=os.getenv('OAUTH_AUTHORIZATION_URL'),
+    tokenUrl=os.getenv('OAUTH_TOKEN_URL')
+)
+
+REDIRECT_URI = os.getenv('REDIRECT_URI')
 
 
 def extract_info_from_pdfs(files: List[UploadFile]):
@@ -51,6 +72,25 @@ def generate_text_from_gpt(prompt: str):
     return response.choices[0].text.strip()
 
 
+@app.get('/login')
+async def login(request: Request):
+    redirect_uri = request.url_for('auth')
+    return await oauth.server.authorize_redirect(request, redirect_uri)
+
+
+@app.route('/callback')
+async def auth(request: Request):
+    token = await oauth.server.authorize_access_token(request)
+    user = token.get('userinfo')
+    access_token = create_access_token(data={"sub": user["email"]})
+    return RedirectResponse(url=f"{REDIRECT_URI}?token={access_token}")
+
+
+@app.get('/me')
+async def me(current_user: dict = Depends(get_current_active_user)):
+    return current_user
+
+
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
     user = authenticate_user(fake_users_db, form_data.username, form_data.password)
@@ -60,7 +100,7 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token_expires = timedelta(minutes=30)
     access_token = create_access_token(
         data={"sub": user["username"]}, expires_delta=access_token_expires
     )
@@ -92,11 +132,9 @@ async def create_upload_files(
     brand_intro = generate_text_from_gpt(brand_intro_prompt)
     product_intro = generate_text_from_gpt(product_intro_prompt)
 
-    # 사용자별 저장할 디렉토리
     user_dir = os.path.join("generated_texts", current_user["username"])
     os.makedirs(user_dir, exist_ok=True)
 
-    # 파일 저장
     with open(os.path.join(user_dir, "company_intro.txt"), "w") as f:
         f.write(company_intro)
 
@@ -138,11 +176,9 @@ async def save_edited_text(
         additional_files: List[str] = Form([]),
         current_user: dict = Depends(get_current_active_user)
 ):
-    # 사용자별 저장할 디렉토리
     user_dir = os.path.join("generated_texts", current_user["username"])
     os.makedirs(user_dir, exist_ok=True)
 
-    # 수정된 파일 저장
     with open(os.path.join(user_dir, "company_intro.txt"), "w") as f:
         f.write(company_intro)
 
@@ -152,7 +188,6 @@ async def save_edited_text(
     with open(os.path.join(user_dir, "product_intro.txt"), "w") as f:
         f.write(product_intro)
 
-    # 추가 파일 저장
     for file_info in additional_files:
         file_purpose, file_name, file_content = file_info.split('|')
         file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
@@ -170,7 +205,6 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     product_intro = ""
     additional_files = []
 
-    # 디렉토리가 존재하지 않으면 생성
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
 
@@ -209,4 +243,5 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000, log_level="info")
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True, ssl_keyfile="private.key",
+                ssl_certfile="certificate.crt", log_level="debug")
