@@ -9,7 +9,6 @@
 <body>
     <div class="container">
         <h1>Company Profile Generator</h1>
-        <button onclick="window.location.href='https://api.udm.kr/login'">Login with OAuth</button>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'CompanyIntro')">회사소개 자동생성</button>
             <button class="tablinks" onclick="openTab(event, 'AdditionalFiles')">추가 정보 업로드</button>
@@ -36,7 +35,7 @@
                     <textarea id="brandIntroText" name="brand_intro" rows="10" cols="50"></textarea><br>
                     <h3>Product Introduction</h3>
                     <textarea id="productIntroText" name="product_intro" rows="10" cols="50"></textarea><br>
-                    <div id="additionalFileInputs"></div>
+                    <div id="additionalFileInputsContainer"></div>
                     <button type="button" onclick="addFileInput()">Add another file</button><br><br>
                     <button type="submit">Save Edited Texts</button>
                 </form>
@@ -72,14 +71,5 @@
         </div>
     </div>
     <script src="app.js"></script>
-    <script>
-        // 토큰을 URL에서 추출하여 로컬 스토리지에 저장
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        if (token) {
-            localStorage.setItem('token', token);
-            window.location.search = '';
-        }
-    </script>
 </body>
 </html>

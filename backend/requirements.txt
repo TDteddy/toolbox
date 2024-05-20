@@ -1,12 +1,7 @@
 fastapi
 uvicorn
-oauthlib
-authlib
-python-dotenv
-httpx
-pyjwt
+python-jose
+passlib[bcrypt]
+pycryptodome
 openai
-pymupdf
-python-jose[cryptography]
-passlib==1.7.4
-bcrypt==3.1.7
+PyMuPDF

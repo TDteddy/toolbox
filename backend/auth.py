@@ -1,9 +1,19 @@
-from passlib.context import CryptContext
 from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
-from datetime import datetime, timedelta
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
-from typing import Optional
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+
+# JWT 설정
+SECRET_KEY = "your_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+# OAuth2 설정
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# 비밀번호 해시 설정
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # 사용자 데이터베이스 (예제용)
 fake_users_db = {
@@ -11,18 +21,10 @@ fake_users_db = {
         "username": "user@example.com",
         "full_name": "User Example",
         "email": "user@example.com",
-        "hashed_password": "$2b$12$KIXsCJy4b5fzGmi3k99BKO.jHQ2oW29upGhHyDbC5q0F8FgBInz8O",  # "password"
+        "hashed_password": pwd_context.hash("password"),
         "disabled": False,
     }
 }
-
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="https://api.udm.kr/token")
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
@@ -34,6 +36,7 @@ def get_user(db, username: str):
     if username in db:
         user_dict = db[username]
         return user_dict
+    return None
 
 def authenticate_user(fake_db, username: str, password: str):
     user = get_user(fake_db, username)
@@ -43,7 +46,7 @@ def authenticate_user(fake_db, username: str, password: str):
         return False
     return user
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

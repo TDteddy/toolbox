@@ -34,7 +34,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         formData.append('files', files[i]);
     }
 
-    const response = await fetch('https://api.udm.kr/uploadfiles/', {
+    const response = await fetch('http://127.0.0.1:8000/uploadfiles/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -79,7 +79,7 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
         formData.append(`additional_files_${index}`, file);
     });
 
-    const response = await fetch('https://api.udm.kr/saveeditedtext/', {
+    const response = await fetch('http://127.0.0.1:8000/saveeditedtext/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -109,7 +109,7 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
     formData.append('file_name', fileName);
     formData.append('file_content', fileContent);
 
-    const response = await fetch('https://api.udm.kr/saveadditionaltext/', {
+    const response = await fetch('http://127.0.0.1:8000/saveadditionaltext/', {
         method: 'POST',
         body: formData,
         headers: {
@@ -150,7 +150,7 @@ async function loadTexts() {
         return;
     }
 
-    const response = await fetch('https://api.udm.kr/gettexts/', {
+    const response = await fetch('http://127.0.0.1:8000/gettexts/', {
         method: 'GET',
         headers: {
             'Authorization': `Bearer ${token}`
