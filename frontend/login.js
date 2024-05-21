@@ -20,22 +20,19 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
         const response = await fetch('https://api.udm.ai/oauth2/login', {
             method: 'POST',
             body: formData,
-            redirect: 'manual'  // 리디렉션을 수동으로 처리하도록 설정
         });
 
-        if (response.status === 302 || response.status === 307) {
-            const redirectUrl = response.headers.get('location'); // 소문자 'location' 사용
-            if (redirectUrl) {
-                alert('Login successful. Redirecting...');
-                window.location.href = redirectUrl;
+        if (response.ok) {
+            const data = await response.json();
+            if (data.redirect_url) {
+                alert('로그인성공!');
+                window.location.href = data.redirect_url;
             } else {
                 alert('Login failed: No redirect URL found.');
             }
         } else {
-            // 응답 내용을 텍스트로 출력
             const responseText = await response.text();
             console.error('Login failed:', response.status, response.statusText, responseText);
-            console.log(response.status, response.statusText, responseText);
             alert('Login failed: ' + responseText);
         }
     } catch (error) {

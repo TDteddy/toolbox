@@ -10,21 +10,39 @@ import openai
 import fitz  # PyMuPDF
 import io
 import os
+
 from auth import authenticate_user, get_current_active_user, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
 from oauth2 import router as oauth2_router, create_access_token
 
-app = FastAPI()
 asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
-# CORS 설정
+app = FastAPI()
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:8000",
+    "https://localhost",
+    "https://localhost:8080",
+    "https://localhost:8000",
+    "https://chat.openai.com",
+    "https://api.udm.ai",
+    "https://udm.ai",
+    "http://udm.ai",
+    "http://api.udm.ai",
+    "http://udm.ai:8000",
+    "https://chatgpt.com",
+    "http://chatgpt.com",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 모든 출처 허용
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["*"],  # 모든 메서드 허용
     allow_headers=["*"],
+    expose_headers=["location", "Location"],  # 리디렉션 URL을 클라이언트에서 접근할 수 있도록 허용
 )
 
-# Static files 설정
 app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
 # OpenAI API 키 설정

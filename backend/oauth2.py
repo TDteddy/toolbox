@@ -37,27 +37,30 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     return encoded_jwt
 
 async def authenticate_client(client_id: str, client_secret: str) -> bool:
-    logger.info(f"Authenticating client_id: {client_id}")
     client = fake_clients_db.get(client_id)
     if not client:
-        logger.error("Client not found")
         return False
     if client["client_secret"] != client_secret:
-        logger.error("Invalid client secret")
         return False
-    logger.info("Client authenticated successfully")
     return True
-
 
 router = APIRouter()
 
 @router.get("/authorize")
 async def authorize(client_id: str, redirect_uri: str, response_type: str, state: str, request: Request):
+    logger.info("Authorize endpoint called")
     client = fake_clients_db.get(client_id)
     if not client or redirect_uri not in client["redirect_uris"]:
+        logger.error("Invalid client or redirect URI")
         raise HTTPException(status_code=400, detail="Invalid client or redirect URI")
-    return RedirectResponse(
-        url=f"/static/login.html?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&state={state}")
+
+    logger.info("Redirecting to login page")
+    response = RedirectResponse(
+        url=f"/static/login.html?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&state={state}"
+    )
+    response.headers["Access-Control-Allow-Origin"] = "https://chat.openai.com"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    return response
 
 @router.post("/login")
 async def login(
@@ -90,8 +93,7 @@ async def login(
 
     redirect_url = f"{redirect_uri}?code={code}&state={state}"
     logger.info(f"Redirecting to: {redirect_url}")
-    return RedirectResponse(url=redirect_url, status_code=302)
-
+    return {"redirect_url": redirect_url}
 @router.post("/token")
 async def oauth2_token(
         grant_type: str = Form(...),
@@ -115,6 +117,6 @@ async def oauth2_token(
         access_token = create_access_token(
             data={"sub": user_info["username"]}, expires_delta=access_token_expires
         )
+        logger.info(f"Access token created for user: {user_info['username']}")
         return {"access_token": access_token, "token_type": "bearer"}
     raise HTTPException(status_code=400, detail="Unsupported grant type")
-
