@@ -109,13 +109,16 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         return;
     }
 
-    const filePurpose = document.getElementById('filePurpose').value;
-    const fileName = document.getElementById('fileName').value;
-    const fileContent = document.getElementById('fileContent').value;
+    const fileInputs = document.getElementsByClassName('additionalFileInput');
     const formData = new FormData();
-    formData.append('file_purpose', filePurpose);
-    formData.append('file_name', fileName);
-    formData.append('file_content', fileContent);
+    for (let i = 0; i < fileInputs.length; i++) {
+        const filePurpose = fileInputs[i].querySelector('[name="file_purpose"]').value;
+        const fileName = fileInputs[i].querySelector('[name="file_name"]').value;
+        const fileContent = fileInputs[i].querySelector('[name="file_content"]').value;
+        formData.append('file_purpose', filePurpose);
+        formData.append('file_name', fileName);
+        formData.append('file_content', fileContent);
+    }
 
     const response = await fetch('https://api.udm.ai/saveadditionaltext/', {
         method: 'POST',
@@ -129,7 +132,7 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         const result = await response.json();
         alert(result.message);
     } else {
-        alert('Failed to upload additional file.');
+        alert('Failed to upload additional files.');
     }
 });
 
@@ -174,6 +177,7 @@ async function loadTexts() {
 }
 
 document.addEventListener('DOMContentLoaded', loadTexts);
+
 
 function addFileInput() {
     const fileInputsDiv = document.getElementById('additionalFileInputsContainer');

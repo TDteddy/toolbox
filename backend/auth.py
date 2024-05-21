@@ -3,7 +3,6 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
-import logging
 
 # JWT 설정
 SECRET_KEY = "your_secret_key"
@@ -15,10 +14,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # 비밀번호 해시 설정
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# 로깅 설정
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 # 사용자 데이터베이스 (예제용)
 fake_users_db = {

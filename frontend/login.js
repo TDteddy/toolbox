@@ -5,30 +5,36 @@ document.addEventListener('DOMContentLoaded', () => {
     const responseType = urlParams.get('response_type');
     const state = urlParams.get('state');
 
-    document.getElementById('client_id').value = clientId;
-    document.getElementById('redirect_uri').value = redirectUri;
-    document.getElementById('response_type').value = responseType;
-    document.getElementById('state').value = state;
+    if (clientId) {
+        document.getElementById('client_id').value = clientId;
+        document.getElementById('redirect_uri').value = redirectUri;
+        document.getElementById('response_type').value = responseType;
+        document.getElementById('state').value = state;
+    }
 });
 
 document.getElementById('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
 
     const formData = new FormData(document.getElementById('loginForm'));
+    const clientId = document.getElementById('client_id').value;
 
     try {
-        const response = await fetch('https://api.udm.ai/oauth2/login', {
+        const loginUrl = clientId ? 'https://api.udm.ai/oauth2/login' : 'https://api.udm.ai/login';
+        const response = await fetch(loginUrl, {
             method: 'POST',
             body: formData,
         });
 
         if (response.ok) {
             const data = await response.json();
+            localStorage.setItem('token', data.access_token); // 토큰 저장
             if (data.redirect_url) {
-                alert('로그인성공!');
+                alert('Login successful. Redirecting...');
                 window.location.href = data.redirect_url;
             } else {
-                alert('Login failed: No redirect URL found.');
+                alert('Login successful.');
+                window.location.href = 'index.html'; // 로그인 후 index.html로 리다이렉션
             }
         } else {
             const responseText = await response.text();

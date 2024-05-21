@@ -1,5 +1,3 @@
-import asyncio
-
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
@@ -11,10 +9,11 @@ import fitz  # PyMuPDF
 import io
 import os
 
+from starlette.middleware.base import BaseHTTPMiddleware
+
 from auth import authenticate_user, get_current_active_user, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
 from oauth2 import router as oauth2_router, create_access_token
 
-asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 app = FastAPI()
 
 origins = [
@@ -173,6 +172,22 @@ async def save_edited_text(
             f.write(file_content)
 
     return {"message": "Texts saved successfully"}
+
+
+@app.post("/login")
+async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
 
 @app.get("/gettexts")
 async def get_texts(current_user: dict = Depends(get_current_active_user)):
