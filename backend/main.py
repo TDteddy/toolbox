@@ -100,20 +100,15 @@ async def create_upload_files(
 
     company_intro_prompt = f"""
     Based on the following information: {role_and_goals}, {extracted_text}, 
-    write a detailed company profile.
+    write a detailed company profile to korean.
     """
     brand_intro_prompt = f"""
     Based on the following information: {role_and_goals}, {extracted_text}, 
-    write a detailed brand introduction.
-    """
-    product_intro_prompt = f"""
-    Based on the following information: {role_and_goals}, {extracted_text}, 
-    write a detailed product introduction.
+    write a detailed brand introduction to korean.
     """
 
     company_intro = generate_text_from_gpt(company_intro_prompt)
     brand_intro = generate_text_from_gpt(brand_intro_prompt)
-    product_intro = generate_text_from_gpt(product_intro_prompt)
 
     # 사용자별 저장할 디렉토리
     user_dir = os.path.join("generated_texts", current_user["username"])
@@ -126,13 +121,9 @@ async def create_upload_files(
     with open(os.path.join(user_dir, "brand_intro.txt"), "w", encoding="utf-8") as f:
         f.write(brand_intro)
 
-    with open(os.path.join(user_dir, "product_intro.txt"), "w", encoding="utf-8") as f:
-        f.write(product_intro)
-
     return {
         "company_intro": company_intro,
-        "brand_intro": brand_intro,
-        "product_intro": product_intro
+        "brand_intro": brand_intro
     }
 
 @app.post("/saveadditionaltext")
@@ -163,7 +154,6 @@ async def save_additional_text(
 async def save_edited_text(
         company_intro: str = Form(...),
         brand_intro: str = Form(...),
-        product_intro: str = Form(...),
         additional_files: List[str] = Form([]),
         current_user: dict = Depends(get_current_active_user)
 ):
@@ -178,8 +168,6 @@ async def save_edited_text(
     with open(os.path.join(user_dir, "brand_intro.txt"), "w", encoding="utf-8") as f:
         f.write(brand_intro)
 
-    with open(os.path.join(user_dir, "product_intro.txt"), "w", encoding="utf-8") as f:
-        f.write(product_intro)
 
     # 추가 파일 저장
     for file_info in additional_files:
@@ -215,7 +203,6 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     user_dir = os.path.join("generated_texts", current_user["username"])
     company_intro = ""
     brand_intro = ""
-    product_intro = ""
     additional_files = {
         "product_introduction_files": [],
         "preferred_blog_content_files": [],
@@ -237,13 +224,9 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
         with open(os.path.join(user_dir, "brand_intro.txt"), "r", encoding="utf-8") as f:
             brand_intro = f.read()
 
-    if os.path.exists(os.path.join(user_dir, "product_intro.txt")):
-        with open(os.path.join(user_dir, "product_intro.txt"), "r", encoding="utf-8") as f:
-            product_intro = f.read()
-
     # 추가 파일 읽기
     for file_name in os.listdir(user_dir):
-        if file_name not in ["company_intro.txt", "brand_intro.txt", "product_intro.txt"]:
+        if file_name not in ["company_intro.txt", "brand_intro.txt"]:
             file_path = os.path.join(user_dir, file_name)
             try:
                 with open(file_path, "r", encoding="utf-8") as f:
@@ -261,7 +244,6 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     return {
         "company_intro": company_intro,
         "brand_intro": brand_intro,
-        "product_intro": product_intro,
         "additional_files": additional_files
     }
 

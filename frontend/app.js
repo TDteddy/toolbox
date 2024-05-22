@@ -51,7 +51,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         const result = await response.json();
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
-        document.getElementById('productIntroText').value = result.product_intro;
     } else {
         alert('Failed to generate profiles.');
     }
@@ -69,7 +68,6 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
 
     const companyIntro = document.getElementById('companyIntroText').value;
     const brandIntro = document.getElementById('brandIntroText').value;
-    const productIntro = document.getElementById('productIntroText').value;
     const additionalFileInputs = document.getElementsByClassName('additionalFileInput');
     const additionalFiles = [];
 
@@ -83,7 +81,6 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     const formData = new FormData();
     formData.append('company_intro', companyIntro);
     formData.append('brand_intro', brandIntro);
-    formData.append('product_intro', productIntro);
     additionalFiles.forEach((file, index) => {
         formData.append(`additional_files_${index}`, file);
     });
@@ -145,7 +142,6 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
     }
 });
 
-
 async function loadTexts() {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -165,7 +161,6 @@ async function loadTexts() {
         const result = await response.json();
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
-        document.getElementById('productIntroText').value = result.product_intro;
 
         const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
         categories.forEach(category => {
@@ -174,8 +169,7 @@ async function loadTexts() {
                 const newFileInput = document.createElement('div');
                 newFileInput.classList.add('additionalFileInput');
                 newFileInput.innerHTML = `
-                    <label for="filePurpose${index + 1}">파일 용도:</label>
-                    <input type="text" id="filePurpose${index + 1}" name="file_purpose" value="${category.replace('_files', '')}" required><br>
+                    <input type="hidden" id="filePurpose${index + 1}" name="file_purpose" value="${category.replace('_files', '')}">
                     <label for="fileName${index + 1}">파일 이름:</label>
                     <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
                     <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
@@ -197,8 +191,7 @@ function addFileInput(category) {
     const newFileInput = document.createElement('div');
     newFileInput.classList.add('additionalFileInput');
     newFileInput.innerHTML = `
-        <label for="filePurpose${newIndex}">파일 용도:</label>
-        <input type="text" id="filePurpose${newIndex}" name="file_purpose" value="${category.replace('_files', '')}" required><br>
+        <input type="hidden" id="filePurpose${newIndex}" name="file_purpose" value="${category.replace('_files', '')}">
         <label for="fileName${newIndex}">파일 이름:</label>
         <input type="text" id="fileName${newIndex}" name="file_name" required><br>
         <textarea id="fileContent${newIndex}" name="file_content" rows="10" cols="50" required></textarea><br>
