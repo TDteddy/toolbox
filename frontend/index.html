@@ -11,9 +11,6 @@
         <h1>Company Profile Generator</h1>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'CompanyIntro')">회사소개 자동생성</button>
-            <button class="tablinks" onclick="openTab(event, 'AdditionalFiles')">추가 정보 업로드</button>
-            <button class="tablinks" onclick="openTab(event, 'OtherTab2')">Other Tab 2</button>
-            <button class="tablinks" onclick="openTab(event, 'OtherTab3')">Other Tab 3</button>
             <button class="tablinks" onclick="logout()">Logout</button>
         </div>
 
@@ -26,6 +23,7 @@
                 <input type="file" id="fileInput" name="files" accept=".pdf" multiple><br><br>
                 <button type="submit">Generate Profiles</button>
             </form>
+            <div id="loading" style="display:none">Generating...</div>
             <div id="result">
                 <h2>Generated Texts</h2>
                 <form id="saveForm">
@@ -38,34 +36,31 @@
                     <button type="submit">Save Edited Texts</button>
                 </form>
             </div>
-        </div>
-
-        <div id="AdditionalFiles" class="tabcontent">
-            <h2>추가 정보 업로드</h2>
+            <h2>Additional Files</h2>
             <form id="additionalForm">
-                <div id="additionalFileInputsContainer">
-                    <div class="additionalFileInput">
-                        <label for="filePurpose1">파일 용도:</label>
-                        <input type="text" id="filePurpose1" name="file_purpose" required><br>
-                        <label for="fileName1">파일 이름:</label>
-                        <input type="text" id="fileName1" name="file_name" required><br>
-                        <textarea id="fileContent1" name="file_content" rows="10" cols="50" required></textarea><br>
-                        <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
-                    </div>
+                <div id="product_introduction_filesContainer">
+                    <h3>제품소개</h3>
                 </div>
-                <button type="button" onclick="addFileInput()">Add another file</button><br><br>
+                <button type="button" onclick="addFileInput('product_introduction_files')">Add another file</button>
+                <div id="preferred_blog_content_filesContainer">
+                    <h3>선호 블로그컨텐츠</h3>
+                </div>
+                <button type="button" onclick="addFileInput('preferred_blog_content_files')">Add another file</button>
+                <div id="preferred_press_release_content_filesContainer">
+                    <h3>선호 보도자료컨텐츠</h3>
+                </div>
+                <button type="button" onclick="addFileInput('preferred_press_release_content_files')">Add another file</button>
+                <div id="learning_ad_copy_filesContainer">
+                    <h3>학습용 광고카피/마케팅메시지</h3>
+                </div>
+                <button type="button" onclick="addFileInput('learning_ad_copy_files')">Add another file</button>
+                <div id="learning_email_filesContainer">
+                    <h3>학습용 이메일 내역</h3>
+                </div>
+                <button type="button" onclick="addFileInput('learning_email_files')">Add another file</button>
+                <br><br>
                 <button type="submit">Upload Additional Files</button>
             </form>
-        </div>
-
-        <div id="OtherTab2" class="tabcontent">
-            <h2>Other Tab 2</h2>
-            <p>Other content 2...</p>
-        </div>
-
-        <div id="OtherTab3" class="tabcontent">
-            <h2>Other Tab 3</h2>
-            <p>Other content 3...</p>
         </div>
     </div>
     <script src="app.js"></script>

@@ -1,3 +1,4 @@
+// 탭 기능
 function openTab(evt, tabName) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
@@ -34,6 +35,8 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         formData.append('files', files[i]);
     }
 
+    document.getElementById('loading').style.display = 'block';
+
     const response = await fetch('https://api.udm.ai/uploadfiles/', {
         method: 'POST',
         body: formData,
@@ -41,6 +44,8 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
             'Authorization': `Bearer ${token}`
         }
     });
+
+    document.getElementById('loading').style.display = 'none';
 
     if (response.ok) {
         const result = await response.json();
@@ -109,16 +114,20 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         return;
     }
 
-    const fileInputs = document.getElementsByClassName('additionalFileInput');
-    const formData = new FormData();
-    for (let i = 0; i < fileInputs.length; i++) {
-        const filePurpose = fileInputs[i].querySelector('[name="file_purpose"]').value;
-        const fileName = fileInputs[i].querySelector('[name="file_name"]').value;
-        const fileContent = fileInputs[i].querySelector('[name="file_content"]').value;
-        formData.append('file_purpose', filePurpose);
-        formData.append('file_name', fileName);
-        formData.append('file_content', fileContent);
+    const additionalFileInputs = document.getElementsByClassName('additionalFileInput');
+    const additionalFiles = [];
+
+    for (let i = 0; i < additionalFileInputs.length; i++) {
+        const filePurpose = additionalFileInputs[i].querySelector('[name="file_purpose"]').value;
+        const fileName = additionalFileInputs[i].querySelector('[name="file_name"]').value;
+        const fileContent = additionalFileInputs[i].querySelector('[name="file_content"]').value;
+        additionalFiles.push(`${filePurpose}|${fileName}|${fileContent}`);
     }
+
+    const formData = new FormData();
+    additionalFiles.forEach((file, index) => {
+        formData.append(`additional_files`, file);
+    });
 
     const response = await fetch('https://api.udm.ai/saveadditionaltext/', {
         method: 'POST',
@@ -132,9 +141,10 @@ document.getElementById('additionalForm').addEventListener('submit', async (even
         const result = await response.json();
         alert(result.message);
     } else {
-        alert('Failed to upload additional files.');
+        alert('Failed to upload additional file.');
     }
 });
+
 
 async function loadTexts() {
     const token = localStorage.getItem('token');
@@ -157,19 +167,22 @@ async function loadTexts() {
         document.getElementById('brandIntroText').value = result.brand_intro;
         document.getElementById('productIntroText').value = result.product_intro;
 
-        const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
-        result.additional_files.forEach((file, index) => {
-            const newFileInput = document.createElement('div');
-            newFileInput.classList.add('additionalFileInput');
-            newFileInput.innerHTML = `
-                <label for="filePurpose${index + 1}">파일 용도:</label>
-                <input type="text" id="filePurpose${index + 1}" name="file_purpose" value="${file.purpose}" required><br>
-                <label for="fileName${index + 1}">파일 이름:</label>
-                <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
-                <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
-                <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
-            `;
-            fileInputsDiv.appendChild(newFileInput);
+        const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
+        categories.forEach(category => {
+            const fileInputsDiv = document.getElementById(`${category}Container`);
+            result.additional_files[category].forEach((file, index) => {
+                const newFileInput = document.createElement('div');
+                newFileInput.classList.add('additionalFileInput');
+                newFileInput.innerHTML = `
+                    <label for="filePurpose${index + 1}">파일 용도:</label>
+                    <input type="text" id="filePurpose${index + 1}" name="file_purpose" value="${category.replace('_files', '')}" required><br>
+                    <label for="fileName${index + 1}">파일 이름:</label>
+                    <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
+                    <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
+                    <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
+                `;
+                fileInputsDiv.appendChild(newFileInput);
+            });
         });
     } else {
         alert('Failed to load texts.');
@@ -178,15 +191,14 @@ async function loadTexts() {
 
 document.addEventListener('DOMContentLoaded', loadTexts);
 
-
-function addFileInput() {
-    const fileInputsDiv = document.getElementById('additionalFileInputsContainer');
+function addFileInput(category) {
+    const fileInputsDiv = document.getElementById(`${category}Container`);
     const newIndex = fileInputsDiv.children.length + 1;
     const newFileInput = document.createElement('div');
     newFileInput.classList.add('additionalFileInput');
     newFileInput.innerHTML = `
         <label for="filePurpose${newIndex}">파일 용도:</label>
-        <input type="text" id="filePurpose${newIndex}" name="file_purpose" required><br>
+        <input type="text" id="filePurpose${newIndex}" name="file_purpose" value="${category.replace('_files', '')}" required><br>
         <label for="fileName${newIndex}">파일 이름:</label>
         <input type="text" id="fileName${newIndex}" name="file_name" required><br>
         <textarea id="fileContent${newIndex}" name="file_content" rows="10" cols="50" required></textarea><br>

@@ -1,19 +1,25 @@
+from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from datetime import timedelta
 from typing import List
-import openai
 import fitz  # PyMuPDF
 import io
 import os
-
+import dotenv
+from openai import OpenAI
 from starlette.middleware.base import BaseHTTPMiddleware
+import logging
+import asyncio
 
 from auth import authenticate_user, get_current_active_user, fake_users_db, ACCESS_TOKEN_EXPIRE_MINUTES
 from oauth2 import router as oauth2_router, create_access_token
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 app = FastAPI()
 
 origins = [
@@ -44,8 +50,10 @@ app.add_middleware(
 
 app.mount("/static", StaticFiles(directory="../frontend"), name="static")
 
+#env
+load_dotenv()
 # OpenAI API 키 설정
-openai.api_key = 'YOUR_OPENAI_API_KEY'
+openai=OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def extract_info_from_pdfs(files: List[UploadFile]):
     text = ""
@@ -58,13 +66,14 @@ def extract_info_from_pdfs(files: List[UploadFile]):
     return text
 
 def generate_text_from_gpt(prompt: str):
-    response = openai.Completion.create(
-        model="gpt-4",
-        prompt=prompt,
-        max_tokens=500,
-        temperature=0.7
+    response = openai.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": prompt}
+        ],
     )
-    return response.choices[0].text.strip()
+    return response.choices[0].message.content.strip()
 
 @app.post("/token")
 async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -111,13 +120,13 @@ async def create_upload_files(
     os.makedirs(user_dir, exist_ok=True)
 
     # 파일 저장
-    with open(os.path.join(user_dir, "company_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "company_intro.txt"), "w", encoding="utf-8") as f:
         f.write(company_intro)
 
-    with open(os.path.join(user_dir, "brand_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "brand_intro.txt"), "w", encoding="utf-8") as f:
         f.write(brand_intro)
 
-    with open(os.path.join(user_dir, "product_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "product_intro.txt"), "w", encoding="utf-8") as f:
         f.write(product_intro)
 
     return {
@@ -128,19 +137,27 @@ async def create_upload_files(
 
 @app.post("/saveadditionaltext")
 async def save_additional_text(
-        file_purpose: str = Form(...),
-        file_name: str = Form(...),
-        file_content: str = Form(...),
+        additional_files: List[str] = Form([]),
         current_user: dict = Depends(get_current_active_user)
 ):
     user_dir = os.path.join("generated_texts", current_user["username"])
     os.makedirs(user_dir, exist_ok=True)
 
-    file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
-    with open(file_path, "w") as f:
-        f.write(file_content)
+    logger.info(f"additional_files: {additional_files}")
+
+    for file_info in additional_files:
+        try:
+            file_purpose, file_name, file_content = file_info.split('|')
+            file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(file_content)
+            logger.info(f"File saved: {file_path}")
+        except Exception as e:
+            logger.error(f"Error saving file: {file_path}, Error: {e}")
+            raise HTTPException(status_code=500, detail=f"Error saving file: {file_name}")
 
     return {"message": "Additional text saved successfully"}
+
 
 @app.post("/saveeditedtext")
 async def save_edited_text(
@@ -155,24 +172,28 @@ async def save_edited_text(
     os.makedirs(user_dir, exist_ok=True)
 
     # 수정된 파일 저장
-    with open(os.path.join(user_dir, "company_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "company_intro.txt"), "w", encoding="utf-8") as f:
         f.write(company_intro)
 
-    with open(os.path.join(user_dir, "brand_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "brand_intro.txt"), "w", encoding="utf-8") as f:
         f.write(brand_intro)
 
-    with open(os.path.join(user_dir, "product_intro.txt"), "w") as f:
+    with open(os.path.join(user_dir, "product_intro.txt"), "w", encoding="utf-8") as f:
         f.write(product_intro)
 
     # 추가 파일 저장
     for file_info in additional_files:
-        file_purpose, file_name, file_content = file_info.split('|')
-        file_path = os.path.join(user_dir, f"{file_purpose}_{file_name}.txt")
-        with open(file_path, "w") as f:
-            f.write(file_content)
+        try:
+            file_purpose, file_name, file_content = file_info.split('|', 2)
+            category_dir = os.path.join(user_dir, file_purpose.replace(" ", "_").lower())
+            os.makedirs(category_dir, exist_ok=True)
+            file_path = os.path.join(category_dir, f"{file_name}.txt")
+            with open(file_path, "w") as f:
+                f.write(file_content)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid file information format")
 
     return {"message": "Texts saved successfully"}
-
 
 @app.post("/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -195,35 +216,47 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     company_intro = ""
     brand_intro = ""
     product_intro = ""
-    additional_files = []
+    additional_files = {
+        "product_introduction_files": [],
+        "preferred_blog_content_files": [],
+        "preferred_press_release_content_files": [],
+        "learning_ad_copy_files": [],
+        "learning_email_files": []
+    }
 
     # 디렉토리가 존재하지 않으면 생성
     if not os.path.exists(user_dir):
         os.makedirs(user_dir)
 
+    # 회사, 브랜드, 제품 소개 파일 읽기
     if os.path.exists(os.path.join(user_dir, "company_intro.txt")):
-        with open(os.path.join(user_dir, "company_intro.txt"), "r") as f:
+        with open(os.path.join(user_dir, "company_intro.txt"), "r", encoding="utf-8") as f:
             company_intro = f.read()
 
     if os.path.exists(os.path.join(user_dir, "brand_intro.txt")):
-        with open(os.path.join(user_dir, "brand_intro.txt"), "r") as f:
+        with open(os.path.join(user_dir, "brand_intro.txt"), "r", encoding="utf-8") as f:
             brand_intro = f.read()
 
     if os.path.exists(os.path.join(user_dir, "product_intro.txt")):
-        with open(os.path.join(user_dir, "product_intro.txt"), "r") as f:
+        with open(os.path.join(user_dir, "product_intro.txt"), "r", encoding="utf-8") as f:
             product_intro = f.read()
 
+    # 추가 파일 읽기
     for file_name in os.listdir(user_dir):
         if file_name not in ["company_intro.txt", "brand_intro.txt", "product_intro.txt"]:
-            with open(os.path.join(user_dir, file_name), "r") as f:
-                content = f.read()
-                purpose, name = file_name.rsplit('_', 1)
-                name = name.replace('.txt', '')
-                additional_files.append({
-                    "purpose": purpose,
-                    "name": name,
-                    "content": content
-                })
+            file_path = os.path.join(user_dir, file_name)
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                    purpose, name = file_name.rsplit('_', 1)
+                    name = name.replace('.txt', '')
+                    additional_files[f"{purpose}_files"].append({
+                        "name": name,
+                        "content": content
+                    })
+                    logger.info(f"Loaded file: {file_path}")
+            except Exception as e:
+                logger.error(f"Error loading file: {file_path}, Error: {e}")
 
     return {
         "company_intro": company_intro,
@@ -231,6 +264,7 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
         "product_intro": product_intro,
         "additional_files": additional_files
     }
+
 
 app.include_router(oauth2_router, prefix="/oauth2", tags=["oauth2"])
 
