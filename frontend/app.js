@@ -51,6 +51,7 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         const result = await response.json();
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
+        document.getElementById('productIntroText').value = result.product_intro;
     } else {
         alert('Failed to generate profiles.');
     }
@@ -68,6 +69,7 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
 
     const companyIntro = document.getElementById('companyIntroText').value;
     const brandIntro = document.getElementById('brandIntroText').value;
+    const productIntro = document.getElementById('productIntroText').value;
     const additionalFileInputs = document.getElementsByClassName('additionalFileInput');
     const additionalFiles = [];
 
@@ -81,6 +83,7 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     const formData = new FormData();
     formData.append('company_intro', companyIntro);
     formData.append('brand_intro', brandIntro);
+    formData.append('product_intro', productIntro);
     additionalFiles.forEach((file, index) => {
         formData.append(`additional_files_${index}`, file);
     });
@@ -161,6 +164,7 @@ async function loadTexts() {
         const result = await response.json();
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
+        document.getElementById('productIntroText').value = result.product_intro;
 
         const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
         categories.forEach(category => {
@@ -181,6 +185,7 @@ async function loadTexts() {
     } else {
         alert('Failed to load texts.');
     }
+    categories.forEach(category => addFileInput(category));
 }
 
 document.addEventListener('DOMContentLoaded', loadTexts);
@@ -209,3 +214,33 @@ function logout() {
     localStorage.removeItem('token');
     window.location.href = 'login.html';
 }
+
+// 챗봇 링크 로드
+async function loadChatbotLinks() {
+    const response = await fetch('https://api.udm.ai/listchatbots/', {
+        method: 'GET',
+        headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+    });
+
+    if (response.ok) {
+        const chatbots = await response.json();
+        const chatbotList = document.getElementById('chatbotList');
+        chatbotList.innerHTML = '';
+
+        chatbots.forEach(chatbot => {
+            const listItem = document.createElement('li');
+            const link = document.createElement('a');
+            link.href = chatbot.url;
+            link.target = '_blank';
+            link.textContent = chatbot.name;
+            listItem.appendChild(link);
+            chatbotList.appendChild(listItem);
+        });
+    } else {
+        alert('Failed to load chatbot links.');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadChatbotLinks);

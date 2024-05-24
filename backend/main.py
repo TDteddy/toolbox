@@ -1,10 +1,11 @@
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form
+from fastapi import FastAPI, Depends, HTTPException, File, UploadFile, Form, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from datetime import timedelta
 from typing import List
+from urllib.parse import unquote
 import fitz  # PyMuPDF
 import io
 import os
@@ -246,6 +247,39 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
         "brand_intro": brand_intro,
         "additional_files": additional_files
     }
+
+
+@app.get("/listfiles")
+async def list_files(current_user: dict = Depends(get_current_active_user)):
+    user_dir = os.path.join("generated_texts", current_user["username"])
+    if not os.path.exists(user_dir):
+        raise HTTPException(status_code=404, detail="No files found for this user.")
+
+    files = os.listdir(user_dir)
+    return {"files": files}
+
+@app.get("/getfilecontent")
+async def get_file_content(file_name: str = Query(...), current_user: dict = Depends(get_current_active_user)):
+    file_name = unquote(file_name)  # URL 디코딩
+    user_dir = os.path.join("generated_texts", current_user["username"])
+    file_path = os.path.join(user_dir, file_name)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found.")
+
+    with open(file_path, "r", encoding="utf-8") as f:
+        content = f.read()
+
+    return {"file_name": file_name, "content": content}
+
+@app.get("/listchatbots")
+async def list_chatbots(current_user: dict = Depends(get_current_active_user)):
+    # 이 예제에서는 하드코딩된 챗봇 링크를 반환합니다.
+    chatbots = [
+        {"name": "보도자료작성 봇", "url": "https://chatgpt.com/g/g-QfSmkmB2e-bodojaryo-mandeulgi-teseuteu-v1-0"},
+        {"name": "Chatbot 2", "url": "https://chatbot2.example.com"},
+        {"name": "Chatbot 3", "url": "https://chatbot3.example.com"},
+    ]
+    return chatbots
 
 
 app.include_router(oauth2_router, prefix="/oauth2", tags=["oauth2"])

@@ -11,6 +11,7 @@
         <h1>Company Profile Generator</h1>
         <div class="tab">
             <button class="tablinks" onclick="openTab(event, 'CompanyIntro')">회사소개 자동생성</button>
+            <button class="tablinks" onclick="openTab(event, 'ChatbotLinks')">챗봇 링크</button>
             <button class="tablinks" onclick="logout()">Logout</button>
         </div>
 
@@ -31,6 +32,8 @@
                     <textarea id="companyIntroText" name="company_intro" rows="10" cols="50"></textarea><br>
                     <h3>Brand Introduction</h3>
                     <textarea id="brandIntroText" name="brand_intro" rows="10" cols="50"></textarea><br>
+                    <h3>Product Introduction</h3>
+                    <textarea id="productIntroText" name="product_intro" rows="10" cols="50"></textarea><br>
                     <button type="submit">Save Edited Texts</button>
                 </form>
             </div>
@@ -59,6 +62,13 @@
                 <br><br>
                 <button type="submit">Upload Additional Files</button>
             </form>
+        </div>
+
+        <div id="ChatbotLinks" class="tabcontent">
+            <h2>챗봇 링크</h2>
+            <ul id="chatbotList">
+                <!-- 채팅봇 링크가 여기에 동적으로 추가됩니다 -->
+            </ul>
         </div>
     </div>
     <script src="app.js"></script>
