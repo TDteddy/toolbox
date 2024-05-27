@@ -51,7 +51,6 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         const result = await response.json();
         document.getElementById('companyIntroText').value = result.company_intro;
         document.getElementById('brandIntroText').value = result.brand_intro;
-        document.getElementById('productIntroText').value = result.product_intro;
     } else {
         alert('Failed to generate profiles.');
     }
@@ -69,7 +68,6 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
 
     const companyIntro = document.getElementById('companyIntroText').value;
     const brandIntro = document.getElementById('brandIntroText').value;
-    const productIntro = document.getElementById('productIntroText').value;
     const additionalFileInputs = document.getElementsByClassName('additionalFileInput');
     const additionalFiles = [];
 
@@ -83,7 +81,6 @@ document.getElementById('saveForm').addEventListener('submit', async (event) => 
     const formData = new FormData();
     formData.append('company_intro', companyIntro);
     formData.append('brand_intro', brandIntro);
-    formData.append('product_intro', productIntro);
     additionalFiles.forEach((file, index) => {
         formData.append(`additional_files_${index}`, file);
     });
@@ -162,29 +159,35 @@ async function loadTexts() {
 
     if (response.ok) {
         const result = await response.json();
-        document.getElementById('companyIntroText').value = result.company_intro;
-        document.getElementById('brandIntroText').value = result.brand_intro;
-        document.getElementById('productIntroText').value = result.product_intro;
+        if (result.company_intro) {
+            document.getElementById('companyIntroText').value = result.company_intro;
+        }
+        if (result.brand_intro) {
+            document.getElementById('brandIntroText').value = result.brand_intro;
+        }
 
         const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
         categories.forEach(category => {
             const fileInputsDiv = document.getElementById(`${category}Container`);
-            result.additional_files[category].forEach((file, index) => {
-                const newFileInput = document.createElement('div');
-                newFileInput.classList.add('additionalFileInput');
-                newFileInput.innerHTML = `
-                    <input type="hidden" id="filePurpose${index + 1}" name="file_purpose" value="${category.replace('_files', '')}">
-                    <label for="fileName${index + 1}">파일 이름:</label>
-                    <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
-                    <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
-                    <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
-                `;
-                fileInputsDiv.appendChild(newFileInput);
-            });
+            if (result.additional_files[category]) {
+                result.additional_files[category].forEach((file, index) => {
+                    const newFileInput = document.createElement('div');
+                    newFileInput.classList.add('additionalFileInput');
+                    newFileInput.innerHTML = `
+                        <input type="hidden" id="filePurpose${index + 1}" name="file_purpose" value="${category.replace('_files', '')}">
+                        <label for="fileName${index + 1}">파일 이름:</label>
+                        <input type="text" id="fileName${index + 1}" name="file_name" value="${file.name}" required><br>
+                        <textarea id="fileContent${index + 1}" name="file_content" rows="10" cols="50" required>${file.content}</textarea><br>
+                        <button type="button" onclick="removeFileInput(this)">Remove this file</button><br>
+                    `;
+                    fileInputsDiv.appendChild(newFileInput);
+                });
+            }
         });
     } else {
         alert('Failed to load texts.');
     }
+    const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
     categories.forEach(category => addFileInput(category));
 }
 
@@ -226,18 +229,39 @@ async function loadChatbotLinks() {
 
     if (response.ok) {
         const chatbots = await response.json();
-        const chatbotList = document.getElementById('chatbotList');
-        chatbotList.innerHTML = '';
+        const chatbotCategories = document.getElementById('chatbotCategories');
+        chatbotCategories.innerHTML = '';
+
+        const categories = {};
 
         chatbots.forEach(chatbot => {
-            const listItem = document.createElement('li');
-            const link = document.createElement('a');
-            link.href = chatbot.url;
-            link.target = '_blank';
-            link.textContent = chatbot.name;
-            listItem.appendChild(link);
-            chatbotList.appendChild(listItem);
+            if (!categories[chatbot.category]) {
+                categories[chatbot.category] = [];
+            }
+            categories[chatbot.category].push(chatbot);
         });
+
+        for (const category in categories) {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.classList.add('category');
+            const categoryTitle = document.createElement('h3');
+            categoryTitle.textContent = category;
+            categoryDiv.appendChild(categoryTitle);
+
+            const ul = document.createElement('ul');
+            categories[category].forEach(chatbot => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = chatbot.url;
+                link.target = '_blank';
+                link.textContent = chatbot.name;
+                listItem.appendChild(link);
+                ul.appendChild(listItem);
+            });
+
+            categoryDiv.appendChild(ul);
+            chatbotCategories.appendChild(categoryDiv);
+        }
     } else {
         alert('Failed to load chatbot links.');
     }

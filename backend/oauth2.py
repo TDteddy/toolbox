@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.responses import RedirectResponse
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 from uuid import uuid4
 import logging
 
@@ -22,7 +22,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 fake_clients_db = {
     "your_client_id": {
         "client_secret": "your_client_secret",
-        "redirect_uris": ["https://chat.openai.com/aip/g-49a70c6e3c718b9d5e342b6bea6497755b2c071b/oauth/callback"]
+        "redirect_uris": [
+            "https://chat.openai.com/aip/g-49a70c6e3c718b9d5e342b6bea6497755b2c071b/oauth/callback"
+        ]
     }
 }
 
@@ -94,6 +96,7 @@ async def login(
     redirect_url = f"{redirect_uri}?code={code}&state={state}"
     logger.info(f"Redirecting to: {redirect_url}")
     return {"redirect_url": redirect_url}
+
 @router.post("/token")
 async def oauth2_token(
         grant_type: str = Form(...),

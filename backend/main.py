@@ -275,9 +275,27 @@ async def get_file_content(file_name: str = Query(...), current_user: dict = Dep
 async def list_chatbots(current_user: dict = Depends(get_current_active_user)):
     # 이 예제에서는 하드코딩된 챗봇 링크를 반환합니다.
     chatbots = [
-        {"name": "보도자료작성 봇", "url": "https://chatgpt.com/g/g-QfSmkmB2e-bodojaryo-mandeulgi-teseuteu-v1-0"},
-        {"name": "Chatbot 2", "url": "https://chatbot2.example.com"},
-        {"name": "Chatbot 3", "url": "https://chatbot3.example.com"},
+        {"name": "보도자료작성 봇", "url": "https://chatgpt.com/g/g-QfSmkmB2e-bodojaryo-mandeulgi-teseuteu-v1-0", "category": "Marketing"},
+        {"name": "광고카피라이터", "url": "https://chatgpt.com/g/g-ATKctcOrx-gwanggokapiraiteo", "category": "Marketing"},
+        {"name": "SNS컨텐츠 작성", "url": "https://chatgpt.com/g/g-X6XcYH2Y5-snskeontenceu-jagseong", "category": "Marketing"},
+        {"name": "마케팅캘린더", "url": "https://chatgpt.com/g/g-GGPPYdsKi-maketingkaelrindeo", "category": "Marketing"},
+        {"name": "온라인 이벤트/프로모션 기획안", "url": "https://chatgpt.com/g/g-6AS60fdtR-onrain-ibenteu-peuromosyeon-gihoegan", "category": "Marketing"},
+        {"name": "셀링포인트 추천", "url": "https://chatgpt.com/g/g-nsLLWE11O-selringpointeu", "category": "Marketing"},
+        {"name": "광고키워드 분석 도우미", "url": "#", "category": "Marketing"},
+        {"name": "색상안 추천", "url": "#", "category": "Marketing"},
+        {"name": "GA분석", "url": "#", "category": "Marketing"},
+        {"name": "뉴스 모니터링", "url": "#", "category": "Marketing"},
+        {"name": "이슈 모니터링", "url": "#", "category": "Marketing"},
+        {"name": "상품평 댓글 작성기", "url": "#", "category": "Commerce"},
+        {"name": "제품 최저가 검색", "url": "#", "category": "Commerce"},
+        {"name": "상품리뷰 분석", "url": "#", "category": "Commerce"},
+        {"name": "계약서 검토", "url": "#", "category": "ETC"},
+        {"name": "이메일 작성 보조", "url": "#", "category": "ETC"},
+        {"name": "로고메이커", "url": "#", "category": "ETC"},
+        {"name": "미팅리포트 작성", "url": "#", "category": "ETC"},
+        {"name": "화장품 전성분 국가별 규제 조회", "url": "#", "category": "ETC"},
+        {"name": "정부지원금 사업조회", "url": "#", "category": "ETC"},
+        {"name": "전세계 휴일 정보", "url": "#", "category": "ETC"},
     ]
     return chatbots
 
