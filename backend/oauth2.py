@@ -23,7 +23,8 @@ fake_clients_db = {
     "your_client_id": {
         "client_secret": "your_client_secret",
         "redirect_uris": [
-            "https://chat.openai.com/aip/g-49a70c6e3c718b9d5e342b6bea6497755b2c071b/oauth/callback"
+            "https://chat.openai.com/aip/g-49a70c6e3c718b9d5e342b6bea6497755b2c071b/oauth/callback",
+            "https://chat.openai.com/aip/g-40c6d9028820ff24f018be3ea60a3f33c33f8f97/oauth/callback"
         ]
     }
 }
