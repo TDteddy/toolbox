@@ -93,18 +93,17 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 
 @app.post("/uploadfiles")
 async def create_upload_files(
-        role_and_goals: str = Form(...),
         files: List[UploadFile] = File(...),
         current_user: dict = Depends(get_current_active_user)
 ):
     extracted_text = extract_info_from_pdfs(files)
 
     company_intro_prompt = f"""
-    Based on the following information: {role_and_goals}, {extracted_text}, 
+    Based on the following information: {extracted_text}, 
     write a detailed company profile to korean.
     """
     brand_intro_prompt = f"""
-    Based on the following information: {role_and_goals}, {extracted_text}, 
+    Based on the following information: {extracted_text},
     write a detailed brand introduction to korean.
     """
 
@@ -207,9 +206,13 @@ async def get_texts(current_user: dict = Depends(get_current_active_user)):
     additional_files = {
         "product_introduction_files": [],
         "preferred_blog_content_files": [],
-        "preferred_press_release_content_files": [],
+        "preferred_instagram_content_files": [],
+        "preferred_facebook_content_files": [],
+        "preferred_news_content_files": [],
         "learning_ad_copy_files": [],
-        "learning_email_files": []
+        "learning_review_files": [],
+        "learning_email_files": [],
+        "learning_csguide_files": []
     }
 
     # 디렉토리가 존재하지 않으면 생성
@@ -275,22 +278,23 @@ async def get_file_content(file_name: str = Query(...), current_user: dict = Dep
 async def list_chatbots(current_user: dict = Depends(get_current_active_user)):
     # 이 예제에서는 하드코딩된 챗봇 링크를 반환합니다.
     chatbots = [
-        {"name": "보도자료작성 봇", "url": "https://chatgpt.com/g/g-QfSmkmB2e-bodojaryo-mandeulgi-teseuteu-v1-0", "category": "Marketing"},
-        {"name": "광고카피라이터", "url": "https://chatgpt.com/g/g-ATKctcOrx-gwanggokapiraiteo", "category": "Marketing"},
-        {"name": "SNS컨텐츠 작성", "url": "https://chatgpt.com/g/g-X6XcYH2Y5-snskeontenceu-jagseong", "category": "Marketing"},
-        {"name": "마케팅캘린더", "url": "https://chatgpt.com/g/g-GGPPYdsKi-maketingkaelrindeo", "category": "Marketing"},
-        {"name": "온라인 이벤트/프로모션 기획안", "url": "https://chatgpt.com/g/g-6AS60fdtR-onrain-ibenteu-peuromosyeon-gihoegan", "category": "Marketing"},
-        {"name": "셀링포인트 추천", "url": "https://chatgpt.com/g/g-nsLLWE11O-selringpointeu", "category": "Marketing"},
+        {"name": "보도자료작성 봇(完)", "url": "https://chatgpt.com/g/g-QfSmkmB2e-bodojaryo-mandeulgi-teseuteu-v1-0", "category": "Marketing"},
+        {"name": "광고카피라이터(完)", "url": "https://chatgpt.com/g/g-ATKctcOrx-gwanggokapiraiteo", "category": "Marketing"},
+        {"name": "SNS컨텐츠 작성(完)", "url": "https://chatgpt.com/g/g-X6XcYH2Y5-snskeontenceu-jagseong", "category": "Marketing"},
+        {"name": "마케팅캘린더(完)", "url": "https://chatgpt.com/g/g-GGPPYdsKi-maketingkaelrindeo", "category": "Marketing"},
+        {"name": "온라인 이벤트/프로모션 기획안(完)", "url": "https://chatgpt.com/g/g-6AS60fdtR-onrain-ibenteu-peuromosyeon-gihoegan", "category": "Marketing"},
+        {"name": "셀링포인트 추천(完)", "url": "https://chatgpt.com/g/g-nsLLWE11O-selringpointeu", "category": "Marketing"},
         {"name": "광고키워드 분석 도우미", "url": "#", "category": "Marketing"},
         {"name": "색상안 추천", "url": "#", "category": "Marketing"},
         {"name": "GA분석", "url": "#", "category": "Marketing"},
         {"name": "뉴스 모니터링", "url": "#", "category": "Marketing"},
         {"name": "이슈 모니터링", "url": "#", "category": "Marketing"},
+        {"name": "상세페이지 기획(完)", "url": "https://chatgpt.com/g/g-ZnPYqU6CC-sangsepeiji-gihoegbos", "category": "Commerce"},
         {"name": "상품평 댓글 작성기", "url": "#", "category": "Commerce"},
         {"name": "제품 최저가 검색", "url": "#", "category": "Commerce"},
         {"name": "상품리뷰 분석", "url": "#", "category": "Commerce"},
-        {"name": "계약서 검토", "url": "#", "category": "ETC"},
-        {"name": "이메일 작성 보조", "url": "#", "category": "ETC"},
+        {"name": "계약서 검토(完)", "url": "https://chatgpt.com/g/g-TZYI1FgZw-beobryulgeomtogi", "category": "ETC"},
+        {"name": "이메일 작성 보조(完)", "url": "https://chatgpt.com/g/g-TO7VtjI4C-imeiljagseongdoumi", "category": "ETC"},
         {"name": "로고메이커", "url": "#", "category": "ETC"},
         {"name": "미팅리포트 작성", "url": "#", "category": "ETC"},
         {"name": "화장품 전성분 국가별 규제 조회", "url": "#", "category": "ETC"},

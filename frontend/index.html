@@ -18,8 +18,8 @@
         <div id="CompanyIntro" class="tabcontent">
             <h2>브랜드 정보</h2>
             <form id="uploadForm">
-                <label for="roleAndGoals">역할과 목표:</label>
-                <textarea id="roleAndGoals" name="roleAndGoals" rows="4" cols="50"></textarea><br><br>
+                <!--<label for="roleAndGoals">역할과 목표:</label>
+                <textarea id="roleAndGoals" name="roleAndGoals" rows="4" cols="50"></textarea><br><br>-->
                 <label for="fileInput">파일 업로드:</label>
                 <input type="file" id="fileInput" name="files" accept=".pdf" multiple><br><br>
                 <button type="submit">Generate Profiles</button>
@@ -45,18 +45,34 @@
                     <h3>선호 블로그컨텐츠</h3>
                 </div>
                 <button type="button" onclick="addFileInput('preferred_blog_content_files')">Add another file</button>
-                <div id="preferred_press_release_content_filesContainer">
-                    <h3>선호 보도자료컨텐츠</h3>
+                <div id="preferred_instagram_content_filesContainer">
+                    <h3>선호 인스타그램 컨텐츠</h3>
                 </div>
-                <button type="button" onclick="addFileInput('preferred_press_release_content_files')">Add another file</button>
+                <button type="button" onclick="addFileInput('preferred_instagram_content_files')">Add another file</button>
+                <div id="preferred_facebook_content_filesContainer">
+                    <h3>선호 페이스북 컨텐츠</h3>
+                </div>
+                <button type="button" onclick="addFileInput('preferred_facebook_content_files')">Add another file</button>
+                <div id="preferred_news_content_filesContainer">
+                    <h3>선호 보도자료 컨텐츠</h3>
+                </div>
+                <button type="button" onclick="addFileInput('preferred_news_content_files')">Add another file</button>
                 <div id="learning_ad_copy_filesContainer">
-                    <h3>학습용 광고카피/마케팅메시지</h3>
+                    <h3>학습용 배너 광고카피</h3>
                 </div>
                 <button type="button" onclick="addFileInput('learning_ad_copy_files')">Add another file</button>
+                <div id="learning_review_filesContainer">
+                    <h3>학습용 상품평 댓글</h3>
+                </div>
+                <button type="button" onclick="addFileInput('learning_review_files')">Add another file</button>
                 <div id="learning_email_filesContainer">
-                    <h3>학습용 이메일 내역</h3>
+                    <h3>학습용 이메일 기록</h3>
                 </div>
                 <button type="button" onclick="addFileInput('learning_email_files')">Add another file</button>
+                <div id="learning_csguide_filesContainer">
+                    <h3>학습용 CS 가이드</h3>
+                </div>
+                <button type="button" onclick="addFileInput('learning_guide_files')">Add another file</button>
                 <br><br>
                 <button type="submit">Upload Additional Files</button>
             </form>

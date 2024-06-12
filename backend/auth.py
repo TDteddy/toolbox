@@ -23,6 +23,27 @@ fake_users_db = {
         "email": "user@example.com",
         "hashed_password": pwd_context.hash("password"),
         "disabled": False,
+    },
+    "jw.park@udm.kr": {
+        "username": "jw.park@udm.kr",
+        "full_name": "Jong Wook Park",
+        "email": "jw.park@udm.kr",
+        "hashed_password": pwd_context.hash("password"),
+        "disabled": False,
+    },
+    "gs.byeon@udm.kr": {
+        "username": "gs.byeon@udm.kr",
+        "full_name": "Gi Seok Byeon",
+        "email": "gs.byeon@udm.kr",
+        "hashed_password": pwd_context.hash("password"),
+        "disabled": False,
+    },
+    "tallo@udm.kr": {
+        "username": "tallo@udm.kr",
+        "full_name": "Tallo",
+        "email": "tallo@udm.kr",
+        "hashed_password": pwd_context.hash("password"),
+        "disabled": False,
     }
 }
 

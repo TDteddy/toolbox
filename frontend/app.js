@@ -26,11 +26,11 @@ document.getElementById('uploadForm').addEventListener('submit', async (event) =
         return;
     }
 
-    const roleAndGoals = document.getElementById('roleAndGoals').value;
+    //const roleAndGoals = document.getElementById('roleAndGoals').value;
     const fileInput = document.getElementById('fileInput');
     const files = fileInput.files;
     const formData = new FormData();
-    formData.append('role_and_goals', roleAndGoals);
+    //formData.append('role_and_goals', roleAndGoals);
     for (let i = 0; i < files.length; i++) {
         formData.append('files', files[i]);
     }
@@ -166,7 +166,7 @@ async function loadTexts() {
             document.getElementById('brandIntroText').value = result.brand_intro;
         }
 
-        const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
+        const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_instagram_content_files", "preferred_facebook_content_files", "preferred_news_content_files", "learning_ad_copy_files", "learning_review_files", "learning_email_files", "learning_csguide_files"];
         categories.forEach(category => {
             const fileInputsDiv = document.getElementById(`${category}Container`);
             if (result.additional_files[category]) {
@@ -187,7 +187,7 @@ async function loadTexts() {
     } else {
         alert('Failed to load texts.');
     }
-    const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_press_release_content_files", "learning_ad_copy_files", "learning_email_files"];
+    const categories = ["product_introduction_files", "preferred_blog_content_files", "preferred_instagram_content_files", "preferred_facebook_content_files", "preferred_news_content_files", "learning_ad_copy_files", "learning_review_files", "learning_email_files", "learning_csguide_files"];
     categories.forEach(category => addFileInput(category));
 }
 
