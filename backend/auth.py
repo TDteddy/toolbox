@@ -24,24 +24,38 @@ fake_users_db = {
         "hashed_password": pwd_context.hash("password"),
         "disabled": False,
     },
-    "jw.park@udm.kr": {
-        "username": "jw.park@udm.kr",
+    "jw.park@udm.ai": {
+        "username": "jw.park@udm.ai",
         "full_name": "Jong Wook Park",
-        "email": "jw.park@udm.kr",
+        "email": "jw.park@udm.ai",
         "hashed_password": pwd_context.hash("password"),
         "disabled": False,
     },
-    "gs.byeon@udm.kr": {
-        "username": "gs.byeon@udm.kr",
+    "gs.byeon@udm.ai": {
+        "username": "gs.byeon@udm.ai",
         "full_name": "Gi Seok Byeon",
-        "email": "gs.byeon@udm.kr",
+        "email": "gs.byeon@udm.ai",
         "hashed_password": pwd_context.hash("password"),
         "disabled": False,
     },
-    "tallo@udm.kr": {
-        "username": "tallo@udm.kr",
+    "tallo@udm.ai": {
+        "username": "tallo@udm.ai",
         "full_name": "Tallo",
-        "email": "tallo@udm.kr",
+        "email": "tallo@udm.ai",
+        "hashed_password": pwd_context.hash("password"),
+        "disabled": False,
+    },
+    "dr.seed@udm.ai": {
+        "username": "dr.seed@udm.ai",
+        "full_name": "Tallo",
+        "email": "dr.seed@udm.ai",
+        "hashed_password": pwd_context.hash("password"),
+        "disabled": False,
+    },
+    "ters@udm.ai": {
+        "username": "ters@udm.ai",
+        "full_name": "Tallo",
+        "email": "ters@udm.ai",
         "hashed_password": pwd_context.hash("password"),
         "disabled": False,
     }
